@@ -2,6 +2,42 @@
 ## Задание 1
 ![task-1](./Task1/InsureTech_технологическая_архитектура-to-be.drawio.png)
 
+## Задание 2
+### Файлы
+[DEPLOYMENT.YAML](./Task2/sprint6/templates/deployment.yaml)
+
+[HPA.YAML](./Task2/sprint6/templates/hpa.yaml) берет параметы из [VALUES.YAML](./Task2/sprint6/values.yaml)
+
+### Запуск minikube с dashboard
+```
+minikube start --addons=metrics-server
+minikube dashboard
+```
+### Запуск сервиса через helm и запуск locust для нагрузочного тестирования
+```
+cd Task2
+helm install task2 sprint6
+export NODE_PORT=$(minikube kubectl -- get --namespace default -o jsonpath="{.spec.ports[0].nodePort}" services task2-sprint6)
+export NODE_IP=$(minikube kubectl -- get nodes --namespace default -o jsonpath="{.items[0].status.addresses[0].address}")
+echo http://$NODE_IP:$NODE_PORT
+locust --host=http://$NODE_IP:$NODE_PORT -u 1500 -r 100
+```
+### Запуск тестирования
+Запустить тестирование по адресу ```http://localhost:8089```
+
+### Масштабирование
+Под нагрузкой появится новый pod
+![scaling](Task2/scaling.png)
+
+### Логи масштабирования
+![logs](Task2/logs.png)
+
+### Завершение работы
+```
+helm uninstall task2
+minikube delete
+```
+
 ## Задание 3
 ### Проблемы и риски текущей архитектуры
 1. Сервис ins-comp-settlement запрашивает данные о страховых продуктах раз в сутки, из-за чего данные могут быть
